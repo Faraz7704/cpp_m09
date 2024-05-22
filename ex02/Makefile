@@ -1,68 +1,41 @@
-### VARS ###
+NAME        = PmergeMe
 
-UNAME_S := $(shell uname -s)
+CC          = c++
+FLAGS       = -Wall -Wextra -Werror -std=c++98 -g
+RM          = rm -rf
 
-SIZE ?= 100
+OBJDIR      = build
 
-### PROGRAM ###
+FILES       = main ${NAME}
 
-NAME = PmergeMe
+SRC         = $(FILES:=.cpp)
+OBJ         = $(addprefix $(OBJDIR)/, $(FILES:=.o))
+HEADER      = ${NAME}.hpp
 
-### COMPILER ###
+GREEN       =	\e[92;5;118m
+YELLOW      =	\e[93;5;226m
+GRAY        =	\e[33;2;37m
+RESET       =	\e[0m
+CURSIVE     =	\e[33;3m
 
-CXX = c++
-CXXFLAGS = -std=c++98 -Wall -Wextra -Werror -Wpedantic -Wshadow -MMD
+.PHONY: all clean fclean re
 
-### SOURCES ###
-
-SRC = \
-	main.cpp		\
-	PmergeMe.cpp	\
-
-OBJ = $(SRC:%.cpp=%.o)
-
-DEP = $(SRC:%.cpp=%.d)
-
-### RULES ###
-
-PHONY := all
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+$(NAME): $(OBJ) $(HEADER)
+	@$(CC) $(OBJ) $(OPTS) -o $(NAME)
+	@printf "$(_SUCCESS) $(GREEN)- Executable ready.\n$(RESET)"
 
-PHONY += sanitize
-ifeq ($(UNAME_S),Linux)
-sanitize: CXXFLAGS += -Wshadow -pedantic -g3 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=null
-endif
-ifeq ($(UNAME_S),Darwin)
-sanitize: CXXFLAGS += -Wshadow -pedantic -g3 -fsanitize=address
-endif
-sanitize: $(NAME)
+$(OBJDIR)/%.o: %.cpp $(HEADER)
+	@mkdir -p $(dir $@)
+	@$(CC) $(FLAGS) $(OPTS) -c $< -o $@
 
-PHONY += thread
-thread: CXXFLAGS += -g3 -fsanitize=thread
-thread: $(NAME)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-PHONY += clean
 clean:
-	rm -rf $(OBJ)
-	rm -rf $(DEP)
+	@$(RM) $(OBJDIR) $(OBJ)
+	@printf "$(YELLOW)    - Object files removed.$(RESET)\n"
 
-PHONY += fclean
 fclean: clean
-	rm -rf $(NAME)
+	@$(RM) $(NAME)
+	@printf "$(YELLOW)    - Executable removed.$(RESET)\n"
 
-PHONY += re
 re: fclean all
-
-PHONY += check
-check: $(NAME)
-	@./$(NAME) `python3 -c 'import random; print(" ".join(map(str, random.sample(range(1, 100001), $(SIZE)))))'`
-
--include $(DEP)
-
-.PHONY: $(PHONY)

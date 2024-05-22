@@ -1,4 +1,4 @@
-NAME		= RPN
+NAME		= btc
 
 CC			= c++
 FLAGS		= -Wall -Wextra -Werror -std=c++98 -g
@@ -6,11 +6,11 @@ RM			= rm -rf
 
 OBJDIR = build
 
-FILES		= main RPN
+FILES		= main BitcoinExchange
 
 SRC			= $(FILES:=.cpp)
 OBJ			= $(addprefix $(OBJDIR)/, $(FILES:=.o))
-HEADER		= RPN.hpp
+HEADER		= BitcoinExchange.hpp
 
 GREEN		=	\e[92;5;118m
 YELLOW		=	\e[93;5;226m
